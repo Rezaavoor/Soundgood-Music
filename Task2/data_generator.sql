@@ -6,22 +6,6 @@ values
   ('Advanced');
 
 insert into
-  month(value)
-values
-  ('January'),
-  ('February'),
-  ('March'),
-  ('April'),
-  ('May'),
-  ('June'),
-  ('July'),
-  ('August'),
-  ('September'),
-  ('October'),
-  ('November'),
-  ('December');
-
-insert into
   student(
     person_number,
     first_name,
@@ -324,7 +308,6 @@ values
 insert into
   student_payment(
     student_id,
-    month_id,
     has_discount,
     ensemble_price,
     individual_lesson_price,
@@ -332,23 +315,22 @@ insert into
     instrument_renting_price
   )
 values
-  (1, 11, true, 55, 65, 75, 85),
-  (2, 11, true, 55, 65, 75, 85),
-  (3, 11, false, 55, 65, 75, 85),
-  (4, 11, false, 55, 65, 75, 85),
-  (5, 11, false, 55, 65, 75, 85);
+  (1, true, 55, 65, 75, 85),
+  (2, true, 55, 65, 75, 85),
+  (3, false, 55, 65, 75, 85),
+  (4, false, 55, 65, 75, 85),
+  (5, false, 55, 65, 75, 85);
 
 insert into
   instructor_payment(
     instructor_id,
-    month_id,
     ensemble_price,
     individual_lesson_price,
     group_lesson_price
   )
 values
-  (1, 11, 555, 565, 575),
-  (2, 11, 555, 565, 575),
-  (3, 11, 555, 565, 575),
-  (4, 11, 555, 565, 575),
-  (5, 11, 555, 565, 575);
+  (1, 555, 565, 575),
+  (2, 555, 565, 575),
+  (3, 555, 565, 575),
+  (4, 555, 565, 575),
+  (5, 555, 565, 575);

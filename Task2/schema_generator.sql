@@ -13,15 +13,9 @@ ensemble,
 student_group_lesson,
 student_ensemble,
 instructor_payment,
-level,
-month;
+level;
 
 create table level(
-	id serial PRIMARY KEY,
-	value VARCHAR(80) NOT NULL
-);
-
-create table month(
 	id serial PRIMARY KEY,
 	value VARCHAR(80) NOT NULL
 );
@@ -76,10 +70,6 @@ create table student_payment(
 	SET
 		NULL,
 		PRIMARY KEY (id, student_id),
-		month_id INT,
-		CONSTRAINT month_id FOREIGN KEY (month_id) REFERENCES month(id) ON DELETE
-	SET
-		NULL,
 		has_discount BOOLEAN NOT NULL,
 		ensemble_price INT NOT NULL,
 		individual_lesson_price INT NOT NULL,
@@ -188,10 +178,6 @@ create table instructor_payment(
 	SET
 		NULL,
 		PRIMARY KEY (id, instructor_id),
-		month_id INT,
-		CONSTRAINT month_id FOREIGN KEY (month_id) REFERENCES month(id) ON DELETE
-	SET
-		NULL,
 		ensemble_price INT NOT NULL,
 		individual_lesson_price INT NOT NULL,
 		group_lesson_price INT NOT NULL
