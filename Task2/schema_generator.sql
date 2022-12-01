@@ -1,8 +1,8 @@
 drop table if exists instrument,
 student,
 renting_instrument,
+instrument_stock,
 contact_person,
-student_payment,
 student_sibling,
 availability,
 instructor,
@@ -12,12 +12,38 @@ group_lesson,
 ensemble,
 student_group_lesson,
 student_ensemble,
-instructor_payment,
-level;
+level,
+lesson_detail,
+lesson_type,
+genre;
 
 create table level(
 	id serial PRIMARY KEY,
 	value VARCHAR(80) NOT NULL
+);
+
+create table lesson_type(
+	id serial PRIMARY KEY,
+	type VARCHAR(80) NOT NULL
+);
+
+create table lesson_detail(
+	id serial PRIMARY KEY,
+	lesson_type_id INT NOT NULL REFERENCES lesson_type(id) ON DELETE SET NULL,
+	level_id INT REFERENCES level(id) ON DELETE SET NULL,
+	student_price INT NOT NULL,
+	student_discount INT NOT NULL,
+	instructor_payment_price INT NOT NULL
+);
+
+create table genre(
+	id serial PRIMARY KEY,
+	value VARCHAR(80) NOT NULL
+);
+
+create table instrument(
+	id serial PRIMARY KEY,
+	name VARCHAR(80) NOT NULL
 );
 
 create table student(
@@ -30,51 +56,36 @@ create table student(
 	street VARCHAR(80),
 	zip VARCHAR(80),
 	city VARCHAR(80),
-	max_number_of_rented_instruments INT NOT NULL
+	max_number_of_renting_instruments INT NOT NULL
 );
 
 create table student_sibling(
-	student_id INT,
-	CONSTRAINT student_id FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE CASCADE,
-	sibling_id INT,
-	CONSTRAINT sibling_id FOREIGN KEY (sibling_id) REFERENCES student(id) ON DELETE CASCADE,
+	student_id INT NOT NULL REFERENCES student(id) ON DELETE CASCADE,
+	sibling_id INT NOT NULL REFERENCES student(id) ON DELETE CASCADE,
 	PRIMARY KEY(student_id, sibling_id)
 );
 
 create table contact_person(
-	id serial,
-	student_id INT,
-	CONSTRAINT student_id FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE CASCADE,
-	PRIMARY KEY (id, student_id),
+	id serial PRIMARY KEY,
+	student_id INT NOT NULL REFERENCES student(id) ON DELETE CASCADE,
 	phone_number VARCHAR(80) NOT NULL,
 	first_name VARCHAR(80),
 	last_name VARCHAR(80)
 );
 
-create table renting_instrument(
+create table instrument_stock(
 	id serial PRIMARY KEY,
-	renting_start_time TIMESTAMP,
+	type INT NOT NULL REFERENCES instrument(id) ON DELETE SET NULL,
 	brand VARCHAR(80),
-	max_renting_time_length INT,
-	student_id INT,
-	CONSTRAINT student_id FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE
-	SET
-		NULL,
-		type VARCHAR(80) NOT NULL
+	renting_price INT NOT NULL
 );
 
-create table student_payment(
-	id serial,
-	student_id INT,
-	CONSTRAINT student_id FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE
-	SET
-		NULL,
-		PRIMARY KEY (id, student_id),
-		has_discount BOOLEAN NOT NULL,
-		ensemble_price INT NOT NULL,
-		individual_lesson_price INT NOT NULL,
-		group_lesson_price INT NOT NULL,
-		instrument_renting_price INT NOT NULL
+create table renting_instrument(
+	id serial PRIMARY KEY,
+	student_id INT NOT NULL REFERENCES student(id) ON DELETE SET NULL,
+	instrument_stock_id INT REFERENCES instrument_stock(id) ON DELETE SET NULL,
+	renting_start_time TIMESTAMP NOT NULL,
+	max_renting_time_length INT NOT NULL
 );
 
 create table instructor(
@@ -91,94 +102,55 @@ create table instructor(
 );
 
 create table availability(
-	id serial,
-	instructor_id INT,
-	CONSTRAINT instructor_id FOREIGN KEY (instructor_id) REFERENCES instructor(id) ON DELETE CASCADE,
-	PRIMARY KEY (id, instructor_id),
+	id serial PRIMARY KEY,
+	instructor_id INT NOT NULL REFERENCES instructor(id) ON DELETE CASCADE,
 	available_from TIMESTAMP NOT NULL,
 	available_to TIMESTAMP NOT NULL
 );
 
-create table instrument(
-	id serial PRIMARY KEY,
-	name VARCHAR(80) NOT NULL
-);
-
 create table instructor_instrument(
-	instructor_id INT,
-	CONSTRAINT instructor_id FOREIGN KEY (instructor_id) REFERENCES instructor(id) ON DELETE CASCADE,
-	instrument_id INT,
-	CONSTRAINT instrument_id FOREIGN KEY (instrument_id) REFERENCES instrument(id) ON DELETE CASCADE,
+	instructor_id INT NOT NULL REFERENCES instructor(id) ON DELETE CASCADE,
+	instrument_id INT NOT NULL REFERENCES instrument(id) ON DELETE CASCADE,
 	PRIMARY KEY(instructor_id, instrument_id)
 );
 
 create table individual_lesson(
-	id serial UNIQUE,
-	instructor_id INT,
-	CONSTRAINT instructor_id FOREIGN KEY (instructor_id) REFERENCES instructor(id) ON DELETE CASCADE,
-	instrument_id INT,
-	CONSTRAINT instrument_id FOREIGN KEY (instrument_id) REFERENCES instrument(id) ON DELETE CASCADE,
-	student_id INT,
-	CONSTRAINT student_id FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE CASCADE,
-	PRIMARY KEY (id, instructor_id, instrument_id, student_id),
+	id serial PRIMARY KEY,
+	instructor_id INT NOT NULL REFERENCES instructor(id) ON DELETE SET NULL,
+	instrument_id INT NOT NULL REFERENCES instrument(id) ON DELETE SET NULL,
+	student_id INT NOT NULL REFERENCES student(id) ON DELETE SET NULL,
 	time TIMESTAMP NOT NULL,
-	level_id INT,
-	CONSTRAINT level_id FOREIGN KEY (level_id) REFERENCES level(id) ON DELETE
-	SET
-		NULL
+	lesson_detail_id INT NOT NULL REFERENCES lesson_detail(id) ON DELETE SET NULL
 );
 
 create table group_lesson(
-	id serial UNIQUE,
-	instrument_id INT,
-	CONSTRAINT instrument_id FOREIGN KEY (instrument_id) REFERENCES instrument(id) ON DELETE CASCADE,
-	instructor_id INT,
-	CONSTRAINT instructor_id FOREIGN KEY (instructor_id) REFERENCES instructor(id) ON DELETE CASCADE,
-	PRIMARY KEY(id, instrument_id, instructor_id),
+	id serial PRIMARY KEY,
+	instrument_id INT NOT NULL REFERENCES instrument(id) ON DELETE SET NULL,
+	instructor_id INT NOT NULL REFERENCES instructor(id) ON DELETE SET NULL,
 	max_number_of_enrollment INT,
 	min_number_of_enrollment INT,
 	time TIMESTAMP NOT NULL,
-	level_id INT,
-	CONSTRAINT level_id FOREIGN KEY (level_id) REFERENCES level(id) ON DELETE
-	SET
-		NULL
+	lesson_detail_id INT NOT NULL REFERENCES lesson_detail(id) ON DELETE SET NULL
 );
 
 create table ensemble(
-	id serial UNIQUE,
-	instructor_id INT,
-	CONSTRAINT instructor_id FOREIGN KEY (instructor_id) REFERENCES instructor(id) ON DELETE CASCADE,
-	PRIMARY KEY(id, instructor_id),
+	id serial PRIMARY KEY,
+	instructor_id INT NOT NULL REFERENCES instructor(id) ON DELETE SET NULL,
 	max_number_of_enrollment INT,
 	min_number_of_enrollment INT,
 	time TIMESTAMP NOT NULL,
-	genre VARCHAR(80)
+	genre_id INT NOT NULL REFERENCES genre(id) ON DELETE SET NULL,
+	lesson_detail_id INT NOT NULL REFERENCES lesson_detail(id) ON DELETE SET NULL
 );
 
 create table student_group_lesson(
-	student_id INT,
-	CONSTRAINT student_id FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE CASCADE,
-	group_lesson_id INT,
-	CONSTRAINT group_lesson_id FOREIGN KEY (group_lesson_id) REFERENCES group_lesson(id) ON DELETE CASCADE,
+	student_id INT NOT NULL REFERENCES student(id) ON DELETE CASCADE,
+	group_lesson_id INT NOT NULL REFERENCES group_lesson(id) ON DELETE CASCADE,
 	PRIMARY KEY(student_id, group_lesson_id)
 );
 
 create table student_ensemble(
-	student_id INT,
-	CONSTRAINT student_id FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE CASCADE,
-	ensemble_id INT,
-	CONSTRAINT ensemble_id FOREIGN KEY (ensemble_id) REFERENCES ensemble(id) ON DELETE CASCADE,
+	student_id INT NOT NULL REFERENCES student(id) ON DELETE CASCADE,
+	ensemble_id INT NOT NULL REFERENCES ensemble(id) ON DELETE CASCADE,
 	PRIMARY KEY(student_id, ensemble_id)
-);
-
-create table instructor_payment(
-	id serial,
-	instructor_id INT,
-	CONSTRAINT instructor_id FOREIGN KEY (instructor_id) REFERENCES instructor(id) ON DELETE
-	SET
-		NULL,
-		PRIMARY KEY (id, instructor_id),
-		ensemble_price INT NOT NULL,
-		individual_lesson_price INT NOT NULL,
-		group_lesson_price INT NOT NULL
 );
