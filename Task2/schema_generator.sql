@@ -1,3 +1,5 @@
+drop view if exists individual_l, group_l, ensemble_l;
+
 drop table if exists instrument,
 student,
 renting_instrument,
@@ -15,7 +17,9 @@ student_ensemble,
 level,
 lesson_detail,
 lesson_type,
-genre;
+genre,
+months; --temp table
+
 
 create table level(
 	id serial PRIMARY KEY,
