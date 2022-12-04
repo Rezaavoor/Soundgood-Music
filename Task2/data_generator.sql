@@ -200,11 +200,17 @@ values
   (48,15),
   (15,48),
   (48,10),
+  (48,14),
+  (14,48),
   (10,48),
   (6,9),
   (9,6),
   (39,36),
   (36,39);
+  (39,3),
+  (3,39),
+  (10,11),
+  (11,10)
 
 insert into
   availability(instructor_id, available_from, available_to)
