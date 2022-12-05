@@ -1,17 +1,22 @@
+-- OBSERVATION: you need to first create a new database and then you can run these queries in the new databse
+
+
+----------------------------------------------------------
+-- drop veiws and tables if they exist
 drop view if exists student_v, individual_lesson_v, group_lesson_v, ensemble_v,
 					student_ensemble_v, student_group_lesson_v, lesson_type_v, lesson_detail_v;
 drop table if exists lesson, student;
+
+
+
+-- create dblink extension if not existed
 CREATE extension if not exists dblink;
 
 
-create table lesson(
-	lesson_id int NOT NULL,
-	student_id int NOT NULL REFERENCES student(id) ON DELETE,
-	type varchar(80) NOT NULL,
-	PRIMARY KEY(lesson_id, student_id, type),
-	time timestamp NOT NULL,
-	price int NOT NULL
-);
+
+
+------------------------------------------------------------
+-- create the two tables
 create table student(
 	id int unique primary key,
 	first_name varchar(80),
@@ -22,10 +27,23 @@ create table student(
 	zip varchar(80),
 	city varchar(80)
 );
+create table lesson(
+	lesson_id int NOT NULL,
+	student_id int NOT NULL REFERENCES student(id) ON DELETE CASCADE,
+	type varchar(80) NOT NULL,
+	PRIMARY KEY(lesson_id, student_id, type),
+	time timestamp NOT NULL,
+	price int NOT NULL
+);
 
+
+
+
+-------------------------------------------------------------
+-- create views of all the transformed data tables   >---->   DB-NAME: sgm
 create view lesson_detail_v as SELECT * 
 FROM dblink('dbname=sgm','SELECT id, lesson_type_id, student_price
-			FROM lesson_detail')
+			FROM lesson_detail')                                            -- OBSERVATION: my main databse is called "sgm". You need to insert your own if you want to test this query
     AS lesson_detail(id int, lesson_type_id int, student_price int);	
 	
 	
@@ -33,7 +51,6 @@ create view lesson_type_v as SELECT *
 FROM dblink('dbname=sgm','SELECT id, type
 			FROM lesson_type')
     AS lesson_type(id int, type varchar(80));
-	
 
 
 create view student_v as SELECT *
@@ -43,21 +60,12 @@ FROM dblink('dbname=sgm','SELECT id, first_name, last_name,
 			   phone_number varchar(80), email varchar(80), 
 			   street varchar(80), zip varchar(80), city varchar(80));
 
-insert into student select * from student_v;
-
 
 create view individual_lesson_v as SELECT * 
 FROM dblink('dbname=sgm','SELECT id, student_id, 
 			time, lesson_detail_id
 			FROM individual_lesson')
     AS individual_lesson(id int, student_id int, time timestamp, lesson_detail_id int);
-
-
-insert into lesson 
-	(select il.id as lesson_id, student_id, type, time, student_price as price from individual_lesson_v as il
-	 join lesson_detail_v as ld on il.lesson_detail_id=ld.id
-	 join lesson_type_v as lt on ld.lesson_type_id=lt.id);
-
 
 create view student_ensemble_v as SELECT * 
 FROM dblink('dbname=sgm','SELECT student_id, ensemble_id
@@ -81,7 +89,29 @@ create view ensemble_v as SELECT *
 FROM dblink('dbname=sgm','SELECT id, time, lesson_detail_id
 			FROM ensemble')
     AS ensemble(id int, time timestamp, lesson_detail_id int);
-	
+
+
+
+
+
+
+------------------------------------------------
+-- insert student from main into current student table
+insert into student select * from student_v;
+
+
+
+------------------------------------------------
+-- insert individual_lesson into lesson table
+insert into lesson 
+	(select il.id as lesson_id, student_id, type, time, student_price as price from individual_lesson_v as il
+	 join lesson_detail_v as ld on il.lesson_detail_id=ld.id
+	 join lesson_type_v as lt on ld.lesson_type_id=lt.id);
+
+
+
+------------------------------------------------
+-- insert ensemble into lesson table
 insert into lesson 
 	(select el.id as lesson_id, student_id, type, time, student_price as price
 	from student_ensemble_v as se
@@ -89,8 +119,12 @@ insert into lesson
 	join student_v as s on s.id=se.ensemble_id
 	join lesson_detail_v as ld on el.lesson_detail_id=ld.id
 	join lesson_type_v as lt on ld.lesson_type_id=lt.id); 
-	
 
+
+
+
+------------------------------------------------
+-- insert group_lesson into lesson table
 insert into lesson
 	(select gl.id as lesson_id, student_id, type, time, student_price as price
 	from student_group_lesson_v as sg
