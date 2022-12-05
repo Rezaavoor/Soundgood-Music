@@ -302,10 +302,10 @@ values
   (1,13,2,'2023-11-23 11:32',2, 7),
   (6,11,1,'2023-06-23 06:41',2, 7),
   (7,13,2,'2023-10-02 05:16',3, 7),
-  (1,15,5,now()::timestamp(0) + interval '1 day',1, 7),
-  (1,10,3,now()::timestamp(0) + interval '3 day',2, 7),
-  (1,6,2,now()::timestamp(0) + interval '4 day',3, 7),
-  (1,6,2,now()::timestamp(0) + interval '5 day',1, 7);
+  (1,15,5,now()::timestamp(0) + interval '8 day',1, 7),
+  (1,10,3,now()::timestamp(0) + interval '10 day',2, 7),
+  (1,6,2,now()::timestamp(0) + interval '11 day',3, 7),
+  (1,6,2,now()::timestamp(0) + interval '12 day',1, 7);
   
 insert into
   student_ensemble(student_id, ensemble_id)
