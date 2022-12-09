@@ -1,0 +1,1 @@
+// here we define properties of a student. Our Controller and DAO uses this
