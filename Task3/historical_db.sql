@@ -1,8 +1,11 @@
--- OBSERVATION: you need to first create a new database and then you can run these queries in the new databse
+-------------- OBSERVATION: you need to first create a new database and then you can run these queries in the new databse
+-------------- To create a database: CREATE DATABASE historical_db;
+-------------- To connect to the database: \c historical_db
+-------------- If you want to run my queries, you should have your main database named: sgm 
 
 
 ----------------------------------------------------------
--- drop veiws and tables if they exist
+-- drop views and tables if they exist
 drop view if exists student_v, individual_lesson_v, group_lesson_v, ensemble_v,
 					student_ensemble_v, student_group_lesson_v, lesson_type_v, lesson_detail_v;
 drop table if exists lesson, student;
