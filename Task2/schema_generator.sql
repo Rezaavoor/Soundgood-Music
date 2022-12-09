@@ -89,6 +89,7 @@ create table renting_instrument(
 	student_id INT NOT NULL REFERENCES student(id) ON DELETE SET NULL,
 	instrument_stock_id INT REFERENCES instrument_stock(id) ON DELETE SET NULL,
 	renting_start_time TIMESTAMP NOT NULL,
+	is_terminated BOOLEAN NOT NULL,
 	max_renting_time_length INT NOT NULL
 );
 

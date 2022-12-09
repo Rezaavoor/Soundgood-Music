@@ -174,19 +174,19 @@ values
   (3,'Non Luctus LLC',234);
 
 insert into renting_instrument(
-  student_id, instrument_stock_id, renting_start_time, max_renting_time_length
+  student_id, instrument_stock_id, renting_start_time, is_terminated, max_renting_time_length
 )
 values
-  (6,11,'2022-08-27 08:56',12),
-  (16,10,'2022-11-02 13:03',12),
-  (10,15,'2022-08-20 03:08',12),
-  (41,6,'2022-11-22 04:40',12),
-  (29,7,'2022-10-23 09:39',12),
-  (26,4,'2022-08-09 18:39',12),
-  (49,18,'2022-08-14 03:51',12),
-  (28,12,'2022-08-21 17:16',12),
-  (35,9,'2022-08-03 14:55',12),
-  (26,19,'2022-07-28 16:26',12);
+  (6,11,'2022-08-27 08:56', false, 12),
+  (16,10,'2022-11-02 13:03', false, 12),
+  (10,15,'2022-08-20 03:08', false, 12),
+  (41,6,'2022-11-22 04:40', false, 12),
+  (29,7,'2022-10-23 09:39', false, 12),
+  (26,4,'2022-08-09 18:39', true, 12),
+  (49,18,'2022-08-14 03:51', false, 12),
+  (28,12,'2022-08-21 17:16', true, 12),
+  (35,9,'2022-08-03 14:55', false, 12),
+  (26,19,'2022-07-28 16:26', false, 12);
 
 insert into
   student_sibling(student_id, sibling_id)
@@ -302,10 +302,10 @@ values
   (1,13,2,'2023-11-23 11:32',2, 7),
   (6,11,1,'2023-06-23 06:41',2, 7),
   (7,13,2,'2023-10-02 05:16',3, 7),
-  (1,15,5,now()::timestamp(0) + interval '1 day',1, 7),
-  (1,10,3,now()::timestamp(0) + interval '3 day',2, 7),
-  (1,6,2,now()::timestamp(0) + interval '4 day',3, 7),
-  (1,6,2,now()::timestamp(0) + interval '5 day',1, 7);
+  (1,15,5,now()::timestamp(0) + interval '8 day',1, 7),
+  (1,10,3,now()::timestamp(0) + interval '10 day',2, 7),
+  (1,6,2,now()::timestamp(0) + interval '11 day',3, 7),
+  (1,6,2,now()::timestamp(0) + interval '12 day',1, 7);
   
 insert into
   student_ensemble(student_id, ensemble_id)
