@@ -74,17 +74,13 @@ export const getStudents = async () => {
     }
 }
 
-
-export const getAvailableInstruments = async () => {
+export const getInstrumentTypes = async () => {
     client = await pool.connect();
     let res;
     try {
         await client.query('BEGIN')
-        const queryText = `select * from instrument_stock as iss
-        left join renting_instrument as ri on iss.id=ri.instrument_stock_id
-        where ri.instrument_stock_id is null or ri.is_terminated is true`
+        const queryText = `select * from instrument`
         res = await client.query(queryText)
-
         await client.query('COMMIT')
     } catch (error) {
         res = error
@@ -96,7 +92,25 @@ export const getAvailableInstruments = async () => {
     }
 }
 
-
-export const testDB = async () => {
-    return await client.query('SELECT * FROM student');
+export const insertIntoRentingInstruments = async (instrumentId, studentId) => {
+    client = await pool.connect();
+    let res;
+    try {
+        await client.query('BEGIN')
+        const queryText = `insert into renting_instrument(
+            student_id, instrument_stock_id, renting_start_time, 
+            is_terminated, max_renting_time_length
+          )
+          values
+            (${studentId}, ${instrumentId}, now()::timestamp(0), false, 12)`
+        res = await client.query(queryText)
+        await client.query('COMMIT')
+    } catch (error) {
+        res = error
+        await client.query('ROLLBACK')
+    }
+    finally{
+        client.release()
+        return res
+    }
 }
