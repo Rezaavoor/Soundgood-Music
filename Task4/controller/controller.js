@@ -6,7 +6,7 @@ import { RentingInstrument } from "../model/rentingInstrument.js";
 import { Student } from "../model/student.js";
 
 
-export const getAvailableInstruments = async (instrymentTypeId) => {
+export const getAvailableInstruments = async (studentId, instrymentTypeId) => {
     const instrumentStocks = await InstrumentStock.getAll();
     const rentingInstruments = await RentingInstrument.getAll();
     const instrumentType = await InstrumentType.get(instrymentTypeId);
@@ -21,7 +21,8 @@ export const getAvailableInstruments = async (instrymentTypeId) => {
         }).filter(e => (e !== null) && (e.type == instrymentTypeId)); // return only available instruments of a specific type
         
         availableInstruments.forEach(instrument => {
-            instrument.type = instrumentType.name
+            instrument.type = instrumentType.name;
+            instrument.rentThis = `/rentInstrument/${studentId}/${instrument.id}`
         });
     
         return {
@@ -34,6 +35,17 @@ export const getAvailableInstruments = async (instrymentTypeId) => {
             "This instrument type does not exist:": instrymentTypeId
         }
     }
+}
+
+export const getInstrumentTypes = async (studentId) => {
+    const instrumentTypes = await InstrumentType.getAll();
+    const results = instrumentTypes.map(i => {
+        return {
+            name: i.name,
+            rentThisTypeOfInstrument: `/instruments/${studentId}/${i.id}`
+        }
+    })
+    return { "List of all available instruments that you can rent":results}
 }
 
 
@@ -57,6 +69,7 @@ export const rentInstrument = async (instrumentId, studentId) => {
                 }
             })
 
+            // see if instrument is available
             await rentingInstruments.forEach(e => {
                 if(e.instrument_stock_id == instrumentId && !e.is_terminated){
                     isInstrumentAvailable = false;
@@ -67,7 +80,8 @@ export const rentInstrument = async (instrumentId, studentId) => {
                 return {
                     "The rental is sucessfully done": {
                         "studentId":studentId,
-                        "instrumentId":instrumentId
+                        "instrumentId":instrumentId,
+                        "goToProfile": `/students/${studentId}`
                     }
                 };
             }
@@ -89,4 +103,51 @@ export const rentInstrument = async (instrumentId, studentId) => {
             "This student does not exist:": studentId
         }
     }
+}
+
+export const getStudentInformation = async (studentId) => {
+    const student = await Student.get(studentId);
+    const rentedInstruments = []
+    if(student){
+        const rentingInstruments = await RentingInstrument.getAll();
+        rentingInstruments.forEach(e => {
+           if(e.student_id == studentId && !e.is_terminated){
+            e.terminateThisRental = `/terminateRental/${studentId}/${e.id}`      
+            rentedInstruments.push(e)
+           }
+        });
+        student.canRentInstrument = rentedInstruments.length >= student.maxNumberOfRentingInstruments ? false : true;
+        student.linkToRentalPage = `/instruments/${studentId}/instrumentTypes`;
+        student.rentedInstruments = rentedInstruments;
+        return student;
+    }
+    else {
+        return {
+            "This student does not exist:": studentId
+        }
+    }
+}
+
+export const getStudentsInformatin = async () => {
+    const students = await Student.getAll();
+    const results = students.map(s=>{
+        return {
+            name: s.name,
+            linkToProfile: `/students/${s.id}`
+        }
+    })
+    return {
+        "list of all students:": results
+    }
+}
+
+export const terminateRental = async (instrumentId, studentId) => {
+    const res = RentingInstrument.update(instrumentId);
+    return {
+        "The rental is sucessfully terminated": {
+            "studentId":studentId,
+            "instrumentId":instrumentId,
+            "goToProfile": `/students/${studentId}`
+        }
+    };
 }
