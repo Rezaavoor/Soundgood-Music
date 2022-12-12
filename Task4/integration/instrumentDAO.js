@@ -100,17 +100,37 @@ export const insertIntoRentingInstruments = async (instrumentId, studentId) => {
         const queryText = `insert into renting_instrument(
             student_id, instrument_stock_id, renting_start_time, 
             is_terminated, max_renting_time_length
-          )
-          values
+            )
+            values
             (${studentId}, ${instrumentId}, now()::timestamp(0), false, 12)`
-        res = await client.query(queryText)
-        await client.query('COMMIT')
-    } catch (error) {
-        res = error
-        await client.query('ROLLBACK')
+            res = await client.query(queryText)
+            await client.query('COMMIT')
+        } catch (error) {
+            res = error
+            await client.query('ROLLBACK')
+        }
+        finally{
+            client.release()
+            return res
+        }
     }
-    finally{
-        client.release()
-        return res
+
+    export const setRentingInstrumentToTerminated = async (id) => {
+        client = await pool.connect();
+        let res;
+        try {
+            await client.query('BEGIN')
+            let queryText = `select * from renting_instrument where id=${id} for update`
+            await client.query(queryText)
+            queryText = `update renting_instrument set is_terminated = true where id=${id}`
+            res = await client.query(queryText)
+            await client.query('COMMIT')
+        } catch (error) {
+            res = error
+            await client.query('ROLLBACK')
+        }
+        finally{
+            client.release()
+            return res
+        }
     }
-}
