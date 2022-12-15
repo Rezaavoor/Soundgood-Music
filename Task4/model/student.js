@@ -1,7 +1,6 @@
 // here we define properties of a student. Our Controller and DAO uses this
 
-
-import { getStudents } from "../integration/instrumentDAO.js"
+import { getStudents, getStudentById, getRentedInstrumentsByStudentId } from "../integration/DAO.js"
 
 export const Student = {}
 
@@ -19,16 +18,25 @@ Student.getAll = async () => {
 }
 
 Student.get = async (id) => {
-    const res = await getStudents();
-    const students = res.rows.map((e)=>{
+    const resStudent = await getStudentById(id);
+    const resInstruments = await getRentedInstrumentsByStudentId(id);
+    const instruments = resInstruments.rows.map(e=>{
         return {
-            id: e.id,
-            name: e.first_name + " " + e.last_name,
-            maxNumberOfRentingInstruments: e.max_number_of_renting_instruments
+            ...e,
+            terminateThisRental: `/terminateRental/${id}/${e.id}`
         }
+
     })
-    
-    return students.find(t => t.id == id);
+   
+    const student = {
+        id: resStudent.rows[0].id,
+        name: resStudent.rows[0].first_name + " " + resStudent.rows[0].last_name,
+        maxNumberOfRentingInstruments: resStudent.rows[0].max_number_of_renting_instruments,
+        canRentInstruments: instruments.length >= resStudent.rows[0].max_number_of_renting_instruments ? false : true,
+        linkToRentalPage: `/instruments/${id}/instrumentTypes`,
+        rentedInstruments: instruments
+    }
+    return student;
 }
 
 

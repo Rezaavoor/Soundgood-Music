@@ -1,6 +1,7 @@
 // here we define properties of an instrument. Our Controller and DAO uses this
 
-import { getInstrumentStocks } from "../integration/instrumentDAO.js"
+import { getInstrumentStocks, getAvailableInstrumentsByTypeId } from "../integration/DAO.js"
+import { InstrumentType } from "./instrumentType.js";
 
 export const InstrumentStock = {}
 
@@ -16,6 +17,20 @@ InstrumentStock.getAll = async () => {
         }
     })
     return instrumentStocks;
+}
+
+InstrumentStock.getAllAvailableByTypeId = async (typeId) => {
+    const typeName = (await InstrumentType.get(typeId)).name;
+    if(typeName){
+        const res = await getAvailableInstrumentsByTypeId(typeId);
+        const availableInstruments = res.rows.map((e)=>{
+            return{
+                ...e,
+                type: typeName
+            }
+        })
+        return availableInstruments
+    }
 }
 
 

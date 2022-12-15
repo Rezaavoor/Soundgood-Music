@@ -1,6 +1,6 @@
 // here we define properties of an instrument type. Our Controller and DAO uses this
 
-import { getInstrumentTypes } from "../integration/instrumentDAO.js"
+import { getInstrumentTypes } from "../integration/DAO.js"
 
 export const InstrumentType = {}
 
