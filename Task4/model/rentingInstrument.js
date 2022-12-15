@@ -1,6 +1,6 @@
 // here we define properties of a renting instrument. Our Controller and DAO uses this
 
-import { getRentingInstruments, insertIntoRentingInstruments, setRentingInstrumentToTerminated } from "../integration/instrumentDAO.js"
+import { getRentingInstruments, createRentingInstruments, updateRentingInstrumentToTerminated } from "../integration/DAO.js"
 
 export const RentingInstrument = {}
 
@@ -22,14 +22,14 @@ RentingInstrument.getAll = async () => {
 
 // create
 RentingInstrument.create = async (instrumentId, studentId) => {
-    const res = await insertIntoRentingInstruments(instrumentId, studentId);
+    const res = await createRentingInstruments(instrumentId, studentId);
     return res;
 }
 
 
 // update
 RentingInstrument.update = async (instrumentId, studentId) => {
-    const res = await setRentingInstrumentToTerminated(instrumentId)
+    const res = await updateRentingInstrumentToTerminated(instrumentId)
     return res;
 }
 

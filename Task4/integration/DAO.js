@@ -1,12 +1,5 @@
 //pulic methods that run SQL queries
 
-// first step: create a connection to the database
-
-// TODO: turn off autocommit
-
-
-// ex: getStudentRentingInstruments(int studentId) ...
-
 
 import PG from 'pg'
 const Pool = PG.Pool;
@@ -74,6 +67,42 @@ export const getStudents = async () => {
     }
 }
 
+export const getStudentById = async (id) => {
+    client = await pool.connect();
+    let res;
+    try {
+        await client.query('BEGIN')
+        const queryText = `select * from student where id=${id}`
+        res = await client.query(queryText)
+        await client.query('COMMIT')
+    } catch (error) {
+        res = error
+        await client.query('ROLLBACK')
+    }
+    finally{
+        client.release()
+        return res
+    }
+}
+
+export const getRentedInstrumentsByStudentId = async (id) => {
+    client = await pool.connect();
+    let res;
+    try {
+        await client.query('BEGIN')
+        const queryText = `select * from renting_instrument where student_id=${id} and is_terminated=false`
+        res = await client.query(queryText)
+        await client.query('COMMIT')
+    } catch (error) {
+        res = error
+        await client.query('ROLLBACK')
+    }
+    finally{
+        client.release()
+        return res
+    }
+}
+
 export const getInstrumentTypes = async () => {
     client = await pool.connect();
     let res;
@@ -92,7 +121,7 @@ export const getInstrumentTypes = async () => {
     }
 }
 
-export const insertIntoRentingInstruments = async (instrumentId, studentId) => {
+export const createRentingInstruments = async (instrumentId, studentId) => {
     client = await pool.connect();
     let res;
     try {
@@ -115,14 +144,33 @@ export const insertIntoRentingInstruments = async (instrumentId, studentId) => {
         }
     }
 
-    export const setRentingInstrumentToTerminated = async (id) => {
+    export const updateRentingInstrumentToTerminated = async (id) => {
         client = await pool.connect();
         let res;
         try {
             await client.query('BEGIN')
-            let queryText = `select * from renting_instrument where id=${id} for update`
-            await client.query(queryText)
-            queryText = `update renting_instrument set is_terminated = true where id=${id}`
+            let queryText = `update renting_instrument set is_terminated = true where id=${id}`
+            res = await client.query(queryText)
+            await client.query('COMMIT')
+        } catch (error) {
+            res = error
+            await client.query('ROLLBACK')
+        }
+        finally{
+            client.release()
+            return res
+        }
+    }
+
+    export const getAvailableInstrumentsByTypeId = async (typeId) => {
+        client = await pool.connect();
+        let res;
+        try {
+            await client.query('BEGIN')
+            let queryText = `select iss.id, iss.type, iss.brand, iss.renting_price from instrument_stock as iss
+            left join
+            (select * from renting_instrument where is_terminated is false) as ri 
+            on iss.id=ri.instrument_stock_id where ri.instrument_stock_id is null and type=${typeId}`
             res = await client.query(queryText)
             await client.query('COMMIT')
         } catch (error) {
