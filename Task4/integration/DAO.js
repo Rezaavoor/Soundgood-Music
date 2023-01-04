@@ -149,7 +149,9 @@ export const createRentingInstruments = async (instrumentId, studentId) => {
         let res;
         try {
             await client.query('BEGIN')
-            let queryText = `update renting_instrument set is_terminated = true where id=${id}`
+            let queryText = `select * from renting_instrument where id=${id} for update`
+            await client.query(queryText)
+            queryText = `update renting_instrument set is_terminated = true where id=${id}`
             res = await client.query(queryText)
             await client.query('COMMIT')
         } catch (error) {
